@@ -9,6 +9,7 @@ import {
   AiOutlineSetting,
   AiOutlineSwap,
   AiOutlineLogout,
+  AiOutlineFile,
 } from "react-icons/ai";
 import { Code, Group } from "@mantine/core";
 import classes from "./Sidebar.module.css";
@@ -49,6 +50,11 @@ export default function NavbarSimpleColored() {
             link: "applications",
             label: "Ứng tuyển nhu cầu",
             icon: AiOutlineCreditCard,
+          },
+          {
+            link: "demandlist", 
+            label: "Quản lý yêu cầu", 
+            icon: AiOutlineFile
           },
           { link: "setting", label: "Cài đặt", icon: AiOutlineSafety }
         );

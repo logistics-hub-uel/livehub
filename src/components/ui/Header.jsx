@@ -1,262 +1,292 @@
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
-  FaBook,
-  FaChartPie,
-  FaChevronDown,
-  FaCode,
-  FaCoins,
-  FaFingerprint,
-  FaBell,
-} from "react-icons/fa";
-import {
-  Anchor,
-  Badge,
   Box,
   Burger,
   Button,
-  Center,
-  Collapse,
-  Divider,
+  Container,
   Drawer,
   Group,
-  HoverCard,
-  ScrollArea,
-  SimpleGrid,
+  Image,
   Text,
-  ThemeIcon,
+  Divider,
+  Menu,
   UnstyledButton,
-  useMantineTheme,
-} from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+  HoverCard,
+  SimpleGrid,
+  ThemeIcon,
+  rem,
+  Flex,
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { 
+  FaChevronDown, 
+  FaTools, 
+  FaPencilAlt, 
+  FaCamera, 
+  FaUsers, 
+  FaBriefcase, 
+  FaInfoCircle, 
+  FaSignInAlt, 
+  FaUserPlus 
+} from 'react-icons/fa';
+import AuthStore from '../../store/AuthStore';
 import classes from "./Header.module.css";
-import { useNavigate } from "react-router-dom";
-import AuthStore from "../../store/AuthStore";
 
-const mockdata = [
+const serviceData = [
   {
-    icon: FaCode,
-    title: "Open source",
-    description: "This Pokémon’s cry is very loud and distracting",
+    icon: FaTools,
+    title: 'Đội ngũ kỹ thuật',
+    description: 'Dịch vụ cung cấp các thiết bị hỗ trợ livestream',
+    link: '/services/tech',
   },
   {
-    icon: FaCoins,
-    title: "Free for everyone",
-    description: "The fluid of Smeargle’s tail secretions changes",
+    icon: FaPencilAlt,
+    title: 'Đội ngũ sản xuất nội dung',
+    description: 'Dịch vụ hỗ trợ nội dung kịch bản cho livestream',
+    link: '/services/content',
   },
   {
-    icon: FaBook,
-    title: "Documentation",
-    description: "Yanma is capable of seeing 360 degrees without",
-  },
-  {
-    icon: FaFingerprint,
-    title: "Security",
-    description: "The shell’s rounded shape and the grooves on its.",
-  },
-  {
-    icon: FaChartPie,
-    title: "Analytics",
-    description: "This Pokémon uses its flying ability to quickly chase",
-  },
-  {
-    icon: FaBell,
-    title: "Notifications",
-    description: "Combusken battles with the intensely hot flames it spews",
+    icon: FaCamera,
+    title: 'Studio',
+    description: 'Dịch vụ hỗ trợ vị trí và thiết kế livestream theo yêu cầu',
+    link: '/services/studio',
   },
 ];
 
 export function Header() {
-  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
-    useDisclosure(false);
-  const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
-  const theme = useMantineTheme();
-  const { credentials, logout } = AuthStore();
+  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
+  const credentials = AuthStore((state) => state.credentials);
+  const navigate = useNavigate();
+
+  const ServiceMenu = () => (
+    <Menu trigger="hover" position="bottom-start" withinPortal offset={0}>
+      <Menu.Target>
+        <UnstyledButton className={classes.link}>
+          <Group gap={7}>
+            <Text>Dịch vụ</Text>
+            <FaChevronDown size="0.8rem" />
+          </Group>
+        </UnstyledButton>
+      </Menu.Target>
+
+      <Menu.Dropdown>
+        {serviceData.map((service) => (
+          <Menu.Item
+            key={service.title}
+            leftSection={
+              <ThemeIcon size={rem(40)} radius="md" color="primary">
+                <service.icon size="1.2rem" />
+              </ThemeIcon>
+            }
+            component={Link}
+            to={service.link}
+          >
+            <Box>
+              <Text fw={500}>{service.title}</Text>
+              <Text size="xs" c="dimmed">{service.description}</Text>
+            </Box>
+          </Menu.Item>
+        ))}
+      </Menu.Dropdown>
+    </Menu>
+  );
 
   const AuthButtons = () => {
+    if (credentials.token) {
+      return (
+        <Group>
+          <Button
+            component={Link}
+            to="/dashboard"
+            color="primary"
+          >
+            Dashboard
+          </Button>
+        </Group>
+      );
+    }
+
     return (
-      <>
-        {credentials.token ? (
-          <>
-            <div className="border-[1px] rounded-xl flex p-2 border-gray-200">
-              <Text size="sm" fw={500} mr={5}>
-                {credentials.full_name}
-              </Text>
-              <Badge color="blue" variant="filled">
-                {credentials.role}
-              </Badge>
-            </div>
-            <Button
-              variant="filled"
-              onClick={() => {
-                navigate("/dashboard");
-              }}
-            >
-              Quản lý
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              onClick={() => {
-                navigate("/auth/login");
-              }}
-              variant="default"
-            >
-              Đăng nhập
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/auth/register");
-              }}
-            >
-              Đăng ký
-            </Button>
-          </>
-        )}
-      </>
+      <Group>
+        <Button
+          component={Link}
+          to="/auth/login"
+          variant="outline"
+          color="primary"
+        >
+          <FaSignInAlt style={{ marginRight: '0.5rem' }} />
+          Đăng nhập
+        </Button>
+        <Button
+          component={Link}
+          to="/auth/register"
+          color="secondary"
+        >
+          <FaUserPlus style={{ marginRight: '0.5rem' }} />
+          Đăng ký
+        </Button>
+      </Group>
     );
   };
 
-  const links = mockdata.map((item) => (
-    <UnstyledButton className={classes.subLink} key={item.title}>
-      <Group wrap="nowrap" align="flex-start">
-        <ThemeIcon size={34} variant="default" radius="md">
-          <item.icon size={22} color={theme.colors.blue[6]} />
-        </ThemeIcon>
-        <div>
-          <Text size="sm" fw={500}>
-            {item.title}
-          </Text>
-          <Text size="xs" c="dimmed">
-            {item.description}
-          </Text>
-        </div>
-      </Group>
-    </UnstyledButton>
-  ));
-  const navigate = useNavigate();
-  return (
-    <Box className="">
-      <header className={classes.header}>
-        <Group justify="space-between" h="100%">
-          <div
-            className="cursor-pointer"
-            onClick={() => {
-              navigate("/");
-            }}
+  const AboutMenu = () => (
+    <HoverCard width={280} position="bottom" radius="md" shadow="md" withinPortal>
+      <HoverCard.Target>
+        <UnstyledButton className={classes.link}>
+          <Group gap={7}>
+            <Text>Về chúng tôi</Text>
+            <FaChevronDown size="0.8rem" />
+          </Group>
+        </UnstyledButton>
+      </HoverCard.Target>
+
+      <HoverCard.Dropdown>
+        <SimpleGrid cols={1} spacing={5}>
+          <UnstyledButton 
+            className={classes.subLink} 
+            component={Link} 
+            to="/about"
           >
-            <div className="bg-blue-400 rounded-xl p-2 font-bold">
-              LOGISTIC_HUB
-            </div>
-          </div>
+            <Group wrap="nowrap" align="flex-start">
+              <ThemeIcon size={34} radius="md" color="primary.3">
+                <FaInfoCircle size="1.2rem" />
+              </ThemeIcon>
+              <div>
+                <Text size="sm" fw={500}>
+                  Giới thiệu
+                </Text>
+                <Text size="xs" c="dimmed">
+                  Tìm hiểu về LiveHub và sứ mệnh của chúng tôi
+                </Text>
+              </div>
+            </Group>
+          </UnstyledButton>
 
-          <Group h="100%" gap={0} visibleFrom="sm">
-            <a href="#" className={classes.link}>
-              Trang chủ
-            </a>
-            <HoverCard
-              width={600}
-              position="bottom"
-              radius="md"
-              shadow="md"
-              withinPortal
-            >
-              <HoverCard.Target>
-                <a href="#" className={classes.link}>
-                  <Center inline>
-                    <Box component="span" mr={5}>
-                      Features
-                    </Box>
-                    <FaChevronDown size={16} color={theme.colors.blue[6]} />
-                  </Center>
-                </a>
-              </HoverCard.Target>
+          <UnstyledButton 
+            className={classes.subLink} 
+            component={Link} 
+            to="/careers"
+          >
+            <Group wrap="nowrap" align="flex-start">
+              <ThemeIcon size={34} radius="md" color="primary.3">
+                <FaBriefcase size="1.2rem" />
+              </ThemeIcon>
+              <div>
+                <Text size="sm" fw={500}>
+                  Tuyển dụng
+                </Text>
+                <Text size="xs" c="dimmed">
+                  Xem các vị trí đang tuyển dụng tại LiveHub
+                </Text>
+              </div>
+            </Group>
+          </UnstyledButton>
 
-              <HoverCard.Dropdown style={{ overflow: "hidden" }}>
-                <Group justify="space-between" px="md">
-                  <Text fw={500}>Features</Text>
-                  <Anchor href="#" fz="xs">
-                    View all
-                  </Anchor>
-                </Group>
+          <UnstyledButton 
+            className={classes.subLink} 
+            component={Link} 
+            to="/partners"
+          >
+            <Group wrap="nowrap" align="flex-start">
+              <ThemeIcon size={34} radius="md" color="primary.3">
+                <FaUsers size="1.2rem" />
+              </ThemeIcon>
+              <div>
+                <Text size="sm" fw={500}>
+                  Đối tác
+                </Text>
+                <Text size="xs" c="dimmed">
+                  Các đối tác của chúng tôi
+                </Text>
+              </div>
+            </Group>
+          </UnstyledButton>
+        </SimpleGrid>
+      </HoverCard.Dropdown>
+    </HoverCard>
+  );
 
-                <Divider my="sm" />
+  return (
+    <Box>
+      <Container size="xl">
+        <header className={classes.header}>
+          <Flex justify="space-between" align="center" w="100%">
+            <Box component={Link} to="/" style={{ minWidth: '120px' }}>
+              <Text size="xl" fw={700}>LiveHub</Text>
+            </Box>
 
-                <SimpleGrid cols={2} spacing={0}>
-                  {links}
-                </SimpleGrid>
+            <Flex justify="center" style={{ flex: 1 }} visibleFrom="sm">
+              <Group h="100%" gap={20}>
+                <Link to="/" className={classes.link}>
+                  Trang chủ
+                </Link>
+                <ServiceMenu />
+                <AboutMenu />
+                <Link to="/contact" className={classes.link}>
+                  Liên hệ
+                </Link>
+              </Group>
+            </Flex>
 
-                <div className={classes.dropdownFooter}>
-                  <Group justify="space-between">
-                    <div>
-                      <Text fw={500} fz="sm">
-                        Get started
-                      </Text>
-                      <Text size="xs" c="dimmed">
-                        Their food sources have decreased, and their numbers
-                      </Text>
-                    </div>
-                    <Button variant="default">Get started</Button>
-                  </Group>
-                </div>
-              </HoverCard.Dropdown>
-            </HoverCard>
-            <a href="#" className={classes.link}>
-              Learn
-            </a>
-            <a href="#" className={classes.link}>
-              Academy
-            </a>
-          </Group>
+            <Group visibleFrom="sm" style={{ minWidth: '120px' }}>
+              <AuthButtons />
+            </Group>
 
-          <Group visibleFrom="sm">
-            <AuthButtons />
-          </Group>
-
-          <Burger
-            opened={drawerOpened}
-            onClick={toggleDrawer}
-            hiddenFrom="sm"
-          />
-        </Group>
-      </header>
+            <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
+          </Flex>
+        </header>
+      </Container>
 
       <Drawer
         opened={drawerOpened}
         onClose={closeDrawer}
         size="100%"
         padding="md"
-        title="Navigation"
+        title="LiveHub"
         hiddenFrom="sm"
         zIndex={1000000}
       >
-        <ScrollArea h="calc(100vh - 80px" mx="-md">
-          <Divider my="sm" />
+        <Divider my="sm" color="gray.1" />
 
-          <a href="#" className={classes.link}>
-            Home
-          </a>
-          <UnstyledButton className={classes.link} onClick={toggleLinks}>
-            <Center inline>
-              <Box component="span" mr={5}>
-                Features
-              </Box>
-              <FaChevronDown size={16} color={theme.colors.blue[6]} />
-            </Center>
-          </UnstyledButton>
-          <Collapse in={linksOpened}>{links}</Collapse>
-          <a href="#" className={classes.link}>
-            Learn
-          </a>
-          <a href="#" className={classes.link}>
-            Academy
-          </a>
-
-          <Divider my="sm" />
-
-          <Group justify="center" grow pb="xl" px="md">
-            <AuthButtons />
+        <Link to="/" className={classes.link} onClick={closeDrawer}>
+          Trang chủ
+        </Link>
+        <UnstyledButton className={classes.link} onClick={toggleDrawer}>
+          <Group gap={7}>
+            <Text>Dịch vụ</Text>
+            <FaChevronDown size="0.8rem" />
           </Group>
-        </ScrollArea>
+        </UnstyledButton>
+        {serviceData.map((service) => (
+          <Link key={service.title} to={service.link} className={classes.linkMobile} onClick={closeDrawer}>
+            - {service.title}
+          </Link>
+        ))}
+        <UnstyledButton className={classes.link} onClick={toggleDrawer}>
+          <Group gap={7}>
+            <Text>Về chúng tôi</Text>
+            <FaChevronDown size="0.8rem" />
+          </Group>
+        </UnstyledButton>
+        <Link to="/about" className={classes.linkMobile} onClick={closeDrawer}>
+          - Giới thiệu
+        </Link>
+        <Link to="/careers" className={classes.linkMobile} onClick={closeDrawer}>
+          - Tuyển dụng
+        </Link>
+        <Link to="/partners" className={classes.linkMobile} onClick={closeDrawer}>
+          - Đối tác
+        </Link>
+        <Link to="/contact" className={classes.link} onClick={closeDrawer}>
+          Liên hệ
+        </Link>
+
+        <Divider my="sm" color="gray.1" />
+
+        <Group justify="center" grow pb="xl" px="md">
+          <AuthButtons />
+        </Group>
       </Drawer>
     </Box>
   );

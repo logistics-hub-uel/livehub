@@ -1,63 +1,114 @@
-import React, { useTransition } from "react";
-import LoginForm from "../../ui/LoginForm";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { 
+  Container, 
+  Text, 
+  Box, 
+  TextInput, 
+  PasswordInput, 
+  Button, 
+  Checkbox, 
+  Group, 
+  Divider, 
+  Title, 
+  Paper,
+} from "@mantine/core";
+import { FaEnvelope, FaLock, FaSignInAlt } from "react-icons/fa";
 import AuthStore from "../../../store/AuthStore";
-import { notifications, showNotification } from "@mantine/notifications";
-import { useNavigate } from "react-router-dom";
 
 const UserLoginPage = () => {
-  const {
-    login,
-    credentials: { role },
-  } = AuthStore();
-  const [isPending, startTransition] = useTransition();
-  // Form data
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const formData = {
-    email: "",
-    password: "",
+  const login = AuthStore((state) => state.login);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      setError("Vui lòng nhập đầy đủ thông tin");
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError("");
+      await login(email, password);
+      navigate("/dashboard");
+    } catch (error) {
+      setError(error.message || "Đăng nhập thất bại. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const loginHandler = async (email, password) => {
-    startTransition(async () => {
-      try {
-        await login(email, password);
-        // Redirect to admin page if user is admin
-        if (role === "admin") {
-          notifications.show({
-            title: "Đăng nhập thành công ✅",
-            message: "Chuyển hướng đến trang quản trị...",
-            color: "green",
-            autoClose: 2000,
-          });
-          navigate("/admin");
-        } else {
-          showNotification({
-            title: "Đăng nhập thành công ✅",
-            message: "Chuyển hướng đến trang chính...",
-            color: "blue",
-            autoClose: 2000,
-          });
-          navigate("/");
-        }
-      } catch (error) {
-        alert(error);
-        notifications.show({
-          title: "Đăng nhập thất bại",
-          message: "Mật khẩu hoặc tài khoản không đúng",
-          color: "red",
-        });
-      }
-    });
-  };
   return (
-    <div className="h-screen items-center justify-center flex">
-      <LoginForm
-        title={"Đăng nhập"}
-        isLoading={isPending}
-        isAbleToRegister={true}
-        loginHandler={loginHandler}
-      />
-    </div>
+    <Container size="sm" py={80}>
+      <Paper shadow="md" radius="md" p="xl" withBorder>
+        <Title order={2} ta="center" mb="lg">Đăng nhập</Title>
+        
+        {error && (
+          <Text color="red" ta="center" mb="md">
+            {error}
+          </Text>
+        )}
+        
+        <form onSubmit={handleSubmit}>
+          <TextInput
+            label="Email"
+            placeholder="example@gmail.com"
+            required
+            mb="md"
+            leftSection={<FaEnvelope />}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          
+          <PasswordInput
+            label="Mật khẩu"
+            placeholder="Nhập mật khẩu của bạn"
+            required
+            mb="md"
+            leftSection={<FaLock />}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          
+          <Group position="apart" mb="lg">
+            <Checkbox label="Ghi nhớ đăng nhập" />
+            <Text component={Link} to="/auth/forgot-password" size="sm" color="primary">
+              Quên mật khẩu?
+            </Text>
+          </Group>
+          
+          <Button 
+            type="submit" 
+            fullWidth 
+            loading={loading}
+            leftSection={<FaSignInAlt />}
+            color="primary"
+          >
+            Đăng nhập
+          </Button>
+        </form>
+        
+        <Divider label="Hoặc" labelPosition="center" my="lg" />
+        
+        <Text ta="center">
+          Bạn chưa có tài khoản?{" "}
+          <Text 
+            component={Link} 
+            to="/auth/register" 
+            variant="link" 
+            color="primary"
+          >
+            Đăng ký ngay
+          </Text>
+        </Text>
+      </Paper>
+    </Container>
   );
 };
 
