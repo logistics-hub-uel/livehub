@@ -25,15 +25,15 @@ import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { 
-  FaPlus, 
-  FaEdit, 
-  FaTrash, 
-  FaEye, 
-  FaCalendarAlt, 
-  FaInfoCircle, 
-  FaCheck, 
-  FaTimes 
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaEye,
+  FaCalendarAlt,
+  FaInfoCircle,
+  FaCheck,
+  FaTimes,
 } from "react-icons/fa";
 import useDemandStore from "../../../store/DemandStore";
 import AuthStore from "../../../store/AuthStore";
@@ -75,22 +75,38 @@ const SOCIAL_MEDIA_OPTIONS = [
 
 const UserDemand = () => {
   const { credentials } = AuthStore();
-  const { 
-    demands, 
-    loading, 
-    fetchDemands, 
-    createDemand: storCreateDemand, 
-    updateDemand: storeUpdateDemand, 
+  const {
+    demands,
+    loading,
+    fetchDemands,
+    createDemand: storCreateDemand,
+    updateDemand: storeUpdateDemand,
     deleteDemand: storeDeleteDemand,
     setSelectedDemand,
     selectedDemand,
-    error
+    error,
   } = useDemandStore();
-  
-  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
-  const [editModalOpened, { open: openEditModal, close: closeEditModal }] = useDisclosure(false);
-  const [viewModalOpened, { open: openViewModal, close: closeViewModal }] = useDisclosure(false);
-  const [deleteModalOpened, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
+
+  useEffect(() => {
+    (async () => {
+      await fetchDemands({
+        account_id: credentials?.user_id,
+      });
+    })();
+  }, []);
+
+  const [
+    createModalOpened,
+    { open: openCreateModal, close: closeCreateModal },
+  ] = useDisclosure(false);
+  const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
+    useDisclosure(false);
+  const [viewModalOpened, { open: openViewModal, close: closeViewModal }] =
+    useDisclosure(false);
+  const [
+    deleteModalOpened,
+    { open: openDeleteModal, close: closeDeleteModal },
+  ] = useDisclosure(false);
   const [activeTab, setActiveTab] = useState("all");
 
   const createForm = useForm({
@@ -106,13 +122,17 @@ const UserDemand = () => {
       account_id: credentials?.user?.id || "",
     },
     validate: {
-      demand_description: (value) => (value.trim().length < 10 ? "Mô tả yêu cầu phải có ít nhất 10 ký tự" : null),
-      expectation: (value) => (value.trim().length < 10 ? "Mong muốn của bạn phải có ít nhất 10 ký tự" : null),
-      to_date: (value, values) => 
-        value < values.from_date 
-          ? "Ngày kết thúc phải sau ngày bắt đầu" 
+      demand_description: (value) =>
+        value.trim().length < 10
+          ? "Mô tả yêu cầu phải có ít nhất 10 ký tự"
           : null,
-    }
+      expectation: (value) =>
+        value.trim().length < 10
+          ? "Mong muốn của bạn phải có ít nhất 10 ký tự"
+          : null,
+      to_date: (value, values) =>
+        value < values.from_date ? "Ngày kết thúc phải sau ngày bắt đầu" : null,
+    },
   });
 
   const editForm = useForm({
@@ -127,35 +147,39 @@ const UserDemand = () => {
       type_demand_service: "technical",
     },
     validate: {
-      demand_description: (value) => (value.trim().length < 10 ? "Mô tả yêu cầu phải có ít nhất 10 ký tự" : null),
-      expectation: (value) => (value.trim().length < 10 ? "Mong muốn của bạn phải có ít nhất 10 ký tự" : null),
-      to_date: (value, values) => 
-        value < values.from_date 
-          ? "Ngày kết thúc phải sau ngày bắt đầu" 
+      demand_description: (value) =>
+        value.trim().length < 10
+          ? "Mô tả yêu cầu phải có ít nhất 10 ký tự"
           : null,
-    }
+      expectation: (value) =>
+        value.trim().length < 10
+          ? "Mong muốn của bạn phải có ít nhất 10 ký tự"
+          : null,
+      to_date: (value, values) =>
+        value < values.from_date ? "Ngày kết thúc phải sau ngày bắt đầu" : null,
+    },
   });
 
   useEffect(() => {
     if (credentials?.user?.id) {
-      fetchDemands({ account_id: credentials.user.id })
-        .catch(error => {
-          console.error("Lỗi khi tải danh sách yêu cầu:", error);
-          if (error.response?.status === 403) {
-            notifications.show({
-              title: "Lỗi xác thực",
-              message: "Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.",
-              color: "red",
-            });
-          }
-        });
+      fetchDemands({ account_id: credentials.user.id }).catch((error) => {
+        console.error("Lỗi khi tải danh sách yêu cầu:", error);
+        if (error.response?.status === 403) {
+          notifications.show({
+            title: "Lỗi xác thực",
+            message:
+              "Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.",
+            color: "red",
+          });
+        }
+      });
     }
   }, [credentials?.user?.id]);
 
   const filterDemandsByTab = () => {
     if (activeTab === "all") return demands;
-    
-    return demands.filter(demand => demand.demand_status === activeTab);
+
+    return demands.filter((demand) => demand.demand_status === activeTab);
   };
 
   const handleCreateDemand = async (values) => {
@@ -239,11 +263,11 @@ const UserDemand = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN');
+    return date.toLocaleDateString("vi-VN");
   };
 
   const getServiceTypeLabel = (type) => {
-    const serviceType = SERVICE_TYPES.find(t => t.value === type);
+    const serviceType = SERVICE_TYPES.find((t) => t.value === type);
     return serviceType ? serviceType.label : type;
   };
 
@@ -285,7 +309,9 @@ const UserDemand = () => {
             <Grid.Col key={demand.id} span={12} md={6} lg={4}>
               <Card shadow="sm" p="lg" radius="md" withBorder>
                 <Group position="apart" mb="xs">
-                  <Text weight={500}>{getServiceTypeLabel(demand.type_demand_service)}</Text>
+                  <Text weight={500}>
+                    {getServiceTypeLabel(demand.type_demand_service)}
+                  </Text>
                   <Badge color={DEMAND_STATUS_COLOR[demand.demand_status]}>
                     {DEMAND_STATUS_LABEL[demand.demand_status]}
                   </Badge>
@@ -298,13 +324,14 @@ const UserDemand = () => {
                 <Group spacing="xs" mb="md">
                   <FaCalendarAlt size={14} />
                   <Text size="sm">
-                    {formatDate(demand.from_date)} - {formatDate(demand.to_date)}
+                    {formatDate(demand.from_date)} -{" "}
+                    {formatDate(demand.to_date)}
                   </Text>
                 </Group>
 
                 <Group position="right" spacing="xs">
-                  <ActionIcon 
-                    color="blue" 
+                  <ActionIcon
+                    color="blue"
                     onClick={() => handleViewDemand(demand)}
                     variant="light"
                     size="lg"
@@ -313,16 +340,16 @@ const UserDemand = () => {
                   </ActionIcon>
                   {demand.demand_status === DEMAND_STATUS.PENDING && (
                     <>
-                      <ActionIcon 
-                        color="green" 
+                      <ActionIcon
+                        color="green"
                         onClick={() => handleEditDemand(demand)}
                         variant="light"
                         size="lg"
                       >
                         <FaEdit size={16} />
                       </ActionIcon>
-                      <ActionIcon 
-                        color="red" 
+                      <ActionIcon
+                        color="red"
                         onClick={() => handleDeleteModal(demand)}
                         variant="light"
                         size="lg"
@@ -413,12 +440,18 @@ const UserDemand = () => {
           <Checkbox
             label="Tôi cần hỗ trợ thêm về các ưu tiên kỹ thuật"
             mb="xl"
-            {...createForm.getInputProps("is_support_preference", { type: "checkbox" })}
+            {...createForm.getInputProps("is_support_preference", {
+              type: "checkbox",
+            })}
           />
 
           <Group position="right">
-            <Button variant="outline" onClick={closeCreateModal}>Hủy</Button>
-            <Button type="submit" loading={loading}>Tạo yêu cầu</Button>
+            <Button variant="outline" onClick={closeCreateModal}>
+              Hủy
+            </Button>
+            <Button type="submit" loading={loading}>
+              Tạo yêu cầu
+            </Button>
           </Group>
         </form>
       </Modal>
@@ -499,12 +532,18 @@ const UserDemand = () => {
             <Checkbox
               label="Tôi cần hỗ trợ thêm về các ưu tiên kỹ thuật"
               mb="xl"
-              {...editForm.getInputProps("is_support_preference", { type: "checkbox" })}
+              {...editForm.getInputProps("is_support_preference", {
+                type: "checkbox",
+              })}
             />
 
             <Group position="right">
-              <Button variant="outline" onClick={closeEditModal}>Hủy</Button>
-              <Button type="submit" loading={loading}>Cập nhật</Button>
+              <Button variant="outline" onClick={closeEditModal}>
+                Hủy
+              </Button>
+              <Button type="submit" loading={loading}>
+                Cập nhật
+              </Button>
             </Group>
           </form>
         )}
@@ -521,33 +560,54 @@ const UserDemand = () => {
           <>
             <Group position="apart" mb="md">
               <Text weight={700}>Trạng thái</Text>
-              <Badge size="lg" color={DEMAND_STATUS_COLOR[selectedDemand.demand_status]}>
+              <Badge
+                size="lg"
+                color={DEMAND_STATUS_COLOR[selectedDemand.demand_status]}
+              >
                 {DEMAND_STATUS_LABEL[selectedDemand.demand_status]}
               </Badge>
             </Group>
 
             <Divider mb="md" />
 
-            <Text weight={700} mb="xs">Loại dịch vụ</Text>
-            <Text mb="md">{getServiceTypeLabel(selectedDemand.type_demand_service)}</Text>
-
-            <Text weight={700} mb="xs">Thời gian yêu cầu</Text>
+            <Text weight={700} mb="xs">
+              Loại dịch vụ
+            </Text>
             <Text mb="md">
-              {formatDate(selectedDemand.from_date)} đến {formatDate(selectedDemand.to_date)}
+              {getServiceTypeLabel(selectedDemand.type_demand_service)}
             </Text>
 
-            <Text weight={700} mb="xs">Mô tả yêu cầu</Text>
+            <Text weight={700} mb="xs">
+              Thời gian yêu cầu
+            </Text>
+            <Text mb="md">
+              {formatDate(selectedDemand.from_date)} đến{" "}
+              {formatDate(selectedDemand.to_date)}
+            </Text>
+
+            <Text weight={700} mb="xs">
+              Mô tả yêu cầu
+            </Text>
             <Text mb="md">{selectedDemand.demand_description}</Text>
 
-            <Text weight={700} mb="xs">Kinh nghiệm trước đây</Text>
-            <Text mb="md">{selectedDemand.previous_experience || "Không có"}</Text>
+            <Text weight={700} mb="xs">
+              Kinh nghiệm trước đây
+            </Text>
+            <Text mb="md">
+              {selectedDemand.previous_experience || "Không có"}
+            </Text>
 
-            <Text weight={700} mb="xs">Mong muốn</Text>
+            <Text weight={700} mb="xs">
+              Mong muốn
+            </Text>
             <Text mb="md">{selectedDemand.expectation}</Text>
 
-            <Text weight={700} mb="xs">Nền tảng mạng xã hội ưa thích</Text>
+            <Text weight={700} mb="xs">
+              Nền tảng mạng xã hội ưa thích
+            </Text>
             <Group mb="md">
-              {selectedDemand.preference_social_media && selectedDemand.preference_social_media.length > 0 ? (
+              {selectedDemand.preference_social_media &&
+              selectedDemand.preference_social_media.length > 0 ? (
                 selectedDemand.preference_social_media.map((platform) => (
                   <Badge key={platform}>{platform}</Badge>
                 ))
@@ -556,25 +616,43 @@ const UserDemand = () => {
               )}
             </Group>
 
-            <Text weight={700} mb="xs">Hỗ trợ thêm kỹ thuật</Text>
+            <Text weight={700} mb="xs">
+              Hỗ trợ thêm kỹ thuật
+            </Text>
             <Text mb="xl">
               {selectedDemand.is_support_preference ? "Có" : "Không"}
             </Text>
 
             {selectedDemand.demand_status === DEMAND_STATUS.REJECTED && (
-              <Alert color="red" title="Yêu cầu đã bị từ chối" icon={<FaInfoCircle />} mb="md">
-                Vui lòng liên hệ chúng tôi để biết thêm chi tiết về lý do từ chối.
+              <Alert
+                color="red"
+                title="Yêu cầu đã bị từ chối"
+                icon={<FaInfoCircle />}
+                mb="md"
+              >
+                Vui lòng liên hệ chúng tôi để biết thêm chi tiết về lý do từ
+                chối.
               </Alert>
             )}
 
             {selectedDemand.demand_status === DEMAND_STATUS.ACCEPTED && (
-              <Alert color="blue" title="Yêu cầu đã được chấp nhận" icon={<FaInfoCircle />} mb="md">
+              <Alert
+                color="blue"
+                title="Yêu cầu đã được chấp nhận"
+                icon={<FaInfoCircle />}
+                mb="md"
+              >
                 Nhà cung cấp dịch vụ sẽ liên hệ với bạn sớm.
               </Alert>
             )}
 
             {selectedDemand.demand_status === DEMAND_STATUS.COMPLETED && (
-              <Alert color="green" title="Yêu cầu đã hoàn thành" icon={<FaCheck />} mb="md">
+              <Alert
+                color="green"
+                title="Yêu cầu đã hoàn thành"
+                icon={<FaCheck />}
+                mb="md"
+              >
                 Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.
               </Alert>
             )}
@@ -591,7 +669,9 @@ const UserDemand = () => {
       >
         <Text mb="xl">Bạn có chắc chắn muốn xóa yêu cầu này không?</Text>
         <Group position="right">
-          <Button variant="outline" onClick={closeDeleteModal}>Hủy</Button>
+          <Button variant="outline" onClick={closeDeleteModal}>
+            Hủy
+          </Button>
           <Button color="red" onClick={handleDeleteDemand} loading={loading}>
             Xóa
           </Button>

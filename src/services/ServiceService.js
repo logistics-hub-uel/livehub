@@ -30,12 +30,21 @@ export const CreateService = async ({
     supplier_id,
   };
 
-  const response = await serviceApi.protected().post("/", serviceData);
+  const response = await serviceApi.protected().post("", serviceData);
   return response;
 };
 
 export const GetServiceDetail = async (serviceId) => {
   const response = await serviceApi.protected().get(`/${serviceId}`);
+  return response;
+};
+
+export const GetUserServices = async (userId) => {
+  const response = await serviceApi.protected().get("", {
+    params: {
+      supplier_id: userId,
+    },
+  });
   return response;
 };
 

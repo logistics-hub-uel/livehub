@@ -1,4 +1,3 @@
-import axios from "axios";
 import ApiService from "./ApiService";
 
 const authApi = new ApiService("/");

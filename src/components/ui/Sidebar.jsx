@@ -23,6 +23,8 @@ export default function NavbarSimpleColored() {
   } = AuthStore();
   const [data, setData] = useState([]);
   const [active, setActive] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     let newData = [];
@@ -38,25 +40,18 @@ export default function NavbarSimpleColored() {
           link: "manage-demands",
           label: "Quản lý nhu cầu",
           icon: AiOutlineSafety,
-        },
-        { link: "setting", label: "Cài đặt", icon: AiOutlineBell }
+        }
       );
       setActive("Dashboard");
     } else {
-      if (role === "supplier") {
+      if (role === "provider") {
         newData.push(
           { link: "service", label: "Dịch vụ", icon: AiOutlineDatabase },
           {
             link: "applications",
             label: "Ứng tuyển nhu cầu",
             icon: AiOutlineCreditCard,
-          },
-          {
-            link: "demandlist", 
-            label: "Quản lý yêu cầu", 
-            icon: AiOutlineFile
-          },
-          { link: "setting", label: "Cài đặt", icon: AiOutlineSafety }
+          }
         );
         setActive("Dịch vụ");
       } else {
@@ -66,21 +61,14 @@ export default function NavbarSimpleColored() {
             link: "rentals",
             label: "Dịch vụ đang thuê",
             icon: AiOutlineCreditCard,
-          },
-          {
-            link: "setting",
-            label: "Cài đặt",
-            icon: AiOutlineSafety,
           }
         );
         setActive("Yêu cầu");
       }
     }
     setData(newData);
+    navigate(`${newData[0].link}`);
   }, [role]);
-
-  const location = useLocation();
-  const navigate = useNavigate();
 
   const links = data.map((item) => (
     <a
@@ -91,6 +79,7 @@ export default function NavbarSimpleColored() {
       onClick={(event) => {
         event.preventDefault();
         navigate(`${item.link}`);
+        setActive(item.label);
       }}
     >
       <item.icon className={classes.linkIcon} size={20} />
@@ -106,15 +95,6 @@ export default function NavbarSimpleColored() {
       </div>
 
       <div className={classes.footer}>
-        <a
-          href="#"
-          className={classes.link}
-          onClick={(event) => event.preventDefault()}
-        >
-          <AiOutlineSwap className={classes.linkIcon} size={20} />
-          <span>Change account</span>
-        </a>
-
         <a
           href="#"
           className={classes.link}

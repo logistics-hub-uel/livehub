@@ -1,6 +1,5 @@
 import { create } from "zustand";
-import { AuthLogin } from "../services/AuthService";
-import { parseJwtPayload } from "../utils/JWTHelper";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 const initCredentials = {
   token: null,
@@ -10,30 +9,20 @@ const initCredentials = {
   email: null,
 };
 
-const AuthStore = create((set, get) => ({
-  credentials: initCredentials,
-  login: async (email, password) => {
-    let response = await AuthLogin(email, password);
-    if (response.status === 200) {
-      let { access_token } = response.data.data;
-      let payload = parseJwtPayload(access_token);
-      set({
-        credentials: {
-          token: access_token,
-          role: payload.role,
-          full_name: payload.full_name,
-          email: payload.email,
-          user_id: payload.user_id,
-        },
-      });
-    } else {
-      set({ credentials: initCredentials });
-      throw new Error(response.data.message);
+const AuthStore = create(
+  persist(
+    (set, get) => ({
+      credentials: initCredentials,
+      setCredentials: (credentials) => {
+        set({ credentials });
+      },
+      logout: () => set({ credentials: initCredentials }),
+    }),
+    {
+      name: "auth-storage",
+      storage: createJSONStorage(() => sessionStorage),
     }
-  },
-  logout: () => {
-    set({ credentials: initCredentials });
-  },
-}));
+  )
+);
 
 export default AuthStore;

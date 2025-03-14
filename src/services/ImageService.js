@@ -16,6 +16,6 @@ export const uploadImage = async (file) => {
 };
 
 export const getImageUrl = (filename) => {
-  const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
+  const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;
   return `${baseUrl}/images/${filename}`;
 };

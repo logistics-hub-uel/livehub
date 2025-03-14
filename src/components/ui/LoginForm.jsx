@@ -14,13 +14,19 @@ import {
 import classes from "./LoginForm.module.css";
 import { useForm } from "@mantine/form";
 import { useNavigate } from "react-router-dom";
+import { AuthLogin } from "../../services/AuthService";
+import { parseJwtPayload } from "../../utils/JWTHelper";
+import AuthStore from "../../store/AuthStore";
 
 export default function LoginForm({
   title,
   isAbleToRegister,
-  loginHandler,
+  onSuccess,
   isLoading = false,
+  setIsLoading,
 }) {
+  const setCredentials = AuthStore((state) => state.setCredentials);
+
   const form = useForm({
     mode: "uncontrolled",
     initialValues: {
@@ -30,6 +36,30 @@ export default function LoginForm({
   });
 
   const Navigate = useNavigate();
+
+  const handleLogin = async (email, password) => {
+    try {
+      setIsLoading(true);
+      const response = await AuthLogin(email, password);
+      if (response.status === 200) {
+        const { access_token } = response.data.data;
+        const payload = parseJwtPayload(access_token);
+        setCredentials({
+          token: access_token,
+          role: payload.role,
+          full_name: payload.full_name,
+          email: payload.email,
+          user_id: payload.user_id,
+        });
+        onSuccess();
+      }
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Container size={420} my={40}>
       <Title ta="center" className={classes.title}>
@@ -79,7 +109,7 @@ export default function LoginForm({
         <Button
           onClick={() => {
             let { email, password } = form.getValues();
-            loginHandler(email, password);
+            handleLogin(email, password);
           }}
           fullWidth
           mt="xl"

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
   Burger,
@@ -17,45 +17,47 @@ import {
   ThemeIcon,
   rem,
   Flex,
-} from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { 
-  FaChevronDown, 
-  FaTools, 
-  FaPencilAlt, 
-  FaCamera, 
-  FaUsers, 
-  FaBriefcase, 
-  FaInfoCircle, 
-  FaSignInAlt, 
-  FaUserPlus 
-} from 'react-icons/fa';
-import AuthStore from '../../store/AuthStore';
+  Badge,
+} from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import {
+  FaChevronDown,
+  FaTools,
+  FaPencilAlt,
+  FaCamera,
+  FaUsers,
+  FaBriefcase,
+  FaInfoCircle,
+  FaSignInAlt,
+  FaUserPlus,
+} from "react-icons/fa";
+import AuthStore from "../../store/AuthStore";
 import classes from "./Header.module.css";
 
 const serviceData = [
   {
     icon: FaTools,
-    title: 'Đội ngũ kỹ thuật',
-    description: 'Dịch vụ cung cấp các thiết bị hỗ trợ livestream',
-    link: '/services/tech',
+    title: "Đội ngũ kỹ thuật",
+    description: "Dịch vụ cung cấp các thiết bị hỗ trợ livestream",
+    link: "/services/tech",
   },
   {
     icon: FaPencilAlt,
-    title: 'Đội ngũ sản xuất nội dung',
-    description: 'Dịch vụ hỗ trợ nội dung kịch bản cho livestream',
-    link: '/services/content',
+    title: "Đội ngũ sản xuất nội dung",
+    description: "Dịch vụ hỗ trợ nội dung kịch bản cho livestream",
+    link: "/services/content",
   },
   {
     icon: FaCamera,
-    title: 'Studio',
-    description: 'Dịch vụ hỗ trợ vị trí và thiết kế livestream theo yêu cầu',
-    link: '/services/studio',
+    title: "Studio",
+    description: "Dịch vụ hỗ trợ vị trí và thiết kế livestream theo yêu cầu",
+    link: "/services/studio",
   },
 ];
 
 export function Header() {
-  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
+  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
+    useDisclosure(false);
   const credentials = AuthStore((state) => state.credentials);
   const navigate = useNavigate();
 
@@ -84,7 +86,9 @@ export function Header() {
           >
             <Box>
               <Text fw={500}>{service.title}</Text>
-              <Text size="xs" c="dimmed">{service.description}</Text>
+              <Text size="xs" c="dimmed">
+                {service.description}
+              </Text>
             </Box>
           </Menu.Item>
         ))}
@@ -92,17 +96,25 @@ export function Header() {
     </Menu>
   );
 
+  const location = useLocation();
+
   const AuthButtons = () => {
     if (credentials.token) {
       return (
         <Group>
-          <Button
-            component={Link}
-            to="/dashboard"
-            color="primary"
-          >
-            Dashboard
-          </Button>
+          <Text size="sm" c="dimmed">
+            Xin chào,{" "}
+            <Text size="sm" fw={500}>
+              {credentials.full_name}
+            </Text>
+          </Text>
+
+          <Badge>{credentials.role}</Badge>
+          {!location.pathname.includes("dashboard") && (
+            <Button component={Link} to="/dashboard" color="primary">
+              Dashboard
+            </Button>
+          )}
         </Group>
       );
     }
@@ -115,15 +127,11 @@ export function Header() {
           variant="outline"
           color="primary"
         >
-          <FaSignInAlt style={{ marginRight: '0.5rem' }} />
+          <FaSignInAlt style={{ marginRight: "0.5rem" }} />
           Đăng nhập
         </Button>
-        <Button
-          component={Link}
-          to="/auth/register"
-          color="secondary"
-        >
-          <FaUserPlus style={{ marginRight: '0.5rem' }} />
+        <Button component={Link} to="/auth/register" color="secondary">
+          <FaUserPlus style={{ marginRight: "0.5rem" }} />
           Đăng ký
         </Button>
       </Group>
@@ -131,7 +139,13 @@ export function Header() {
   };
 
   const AboutMenu = () => (
-    <HoverCard width={280} position="bottom" radius="md" shadow="md" withinPortal>
+    <HoverCard
+      width={280}
+      position="bottom"
+      radius="md"
+      shadow="md"
+      withinPortal
+    >
       <HoverCard.Target>
         <UnstyledButton className={classes.link}>
           <Group gap={7}>
@@ -143,9 +157,9 @@ export function Header() {
 
       <HoverCard.Dropdown>
         <SimpleGrid cols={1} spacing={5}>
-          <UnstyledButton 
-            className={classes.subLink} 
-            component={Link} 
+          <UnstyledButton
+            className={classes.subLink}
+            component={Link}
             to="/about"
           >
             <Group wrap="nowrap" align="flex-start">
@@ -163,9 +177,9 @@ export function Header() {
             </Group>
           </UnstyledButton>
 
-          <UnstyledButton 
-            className={classes.subLink} 
-            component={Link} 
+          <UnstyledButton
+            className={classes.subLink}
+            component={Link}
             to="/careers"
           >
             <Group wrap="nowrap" align="flex-start">
@@ -183,9 +197,9 @@ export function Header() {
             </Group>
           </UnstyledButton>
 
-          <UnstyledButton 
-            className={classes.subLink} 
-            component={Link} 
+          <UnstyledButton
+            className={classes.subLink}
+            component={Link}
             to="/partners"
           >
             <Group wrap="nowrap" align="flex-start">
@@ -212,8 +226,10 @@ export function Header() {
       <Container size="xl">
         <header className={classes.header}>
           <Flex justify="space-between" align="center" w="100%">
-            <Box component={Link} to="/" style={{ minWidth: '120px' }}>
-              <Text size="xl" fw={700}>LiveHub</Text>
+            <Box component={Link} to="/" style={{ minWidth: "120px" }}>
+              <Text size="xl" fw={700}>
+                LiveHub
+              </Text>
             </Box>
 
             <Flex justify="center" style={{ flex: 1 }} visibleFrom="sm">
@@ -229,11 +245,15 @@ export function Header() {
               </Group>
             </Flex>
 
-            <Group visibleFrom="sm" style={{ minWidth: '120px' }}>
+            <Group visibleFrom="sm" style={{ minWidth: "120px" }}>
               <AuthButtons />
             </Group>
 
-            <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
+            <Burger
+              opened={drawerOpened}
+              onClick={toggleDrawer}
+              hiddenFrom="sm"
+            />
           </Flex>
         </header>
       </Container>
@@ -259,7 +279,12 @@ export function Header() {
           </Group>
         </UnstyledButton>
         {serviceData.map((service) => (
-          <Link key={service.title} to={service.link} className={classes.linkMobile} onClick={closeDrawer}>
+          <Link
+            key={service.title}
+            to={service.link}
+            className={classes.linkMobile}
+            onClick={closeDrawer}
+          >
             - {service.title}
           </Link>
         ))}
@@ -272,10 +297,18 @@ export function Header() {
         <Link to="/about" className={classes.linkMobile} onClick={closeDrawer}>
           - Giới thiệu
         </Link>
-        <Link to="/careers" className={classes.linkMobile} onClick={closeDrawer}>
+        <Link
+          to="/careers"
+          className={classes.linkMobile}
+          onClick={closeDrawer}
+        >
           - Tuyển dụng
         </Link>
-        <Link to="/partners" className={classes.linkMobile} onClick={closeDrawer}>
+        <Link
+          to="/partners"
+          className={classes.linkMobile}
+          onClick={closeDrawer}
+        >
           - Đối tác
         </Link>
         <Link to="/contact" className={classes.link} onClick={closeDrawer}>

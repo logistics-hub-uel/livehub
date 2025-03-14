@@ -1,8 +1,7 @@
 import axios from "axios";
 import AuthStore from "../store/AuthStore";
-import { isTokenExpired } from "../utils/JWTHelper";
 
-class ApiService {
+class ApiClient {
   #publicInstance = null;
   #protectedInstance = null;
   #baseURL = "";
@@ -35,37 +34,12 @@ class ApiService {
     instance.interceptors.request.use(
       (config) => {
         const accessToken = AuthStore.getState().credentials.token;
-        
-        // Kiểm tra token có tồn tại không
-        if (!accessToken) {
-          console.warn("No token available for authenticated request");
-          return Promise.reject(new Error("No authentication token available"));
+        if (accessToken) {
+          config.headers.Authorization = `Bearer ${accessToken}`;
         }
-        
-        // Kiểm tra token có hết hạn không
-        if (isTokenExpired(accessToken)) {
-          console.warn("Authentication token has expired");
-          AuthStore.getState().logout();
-          return Promise.reject(new Error("Authentication token has expired"));
-        }
-        
-        // Thêm token vào header
-        config.headers.Authorization = `Bearer ${accessToken}`;
-        
         return config;
       },
       (error) => Promise.reject(error)
-    );
-
-    instance.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        if (error.response?.status === 401 || error.response?.status === 403) {
-          console.warn(`Authentication error: ${error.response.status}`);
-          AuthStore.getState().logout();
-        }
-        return Promise.reject(error);
-      }
     );
 
     return instance;
@@ -86,4 +60,4 @@ class ApiService {
   }
 }
 
-export default ApiService;
+export default ApiClient;
