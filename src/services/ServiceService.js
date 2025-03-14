@@ -3,7 +3,7 @@ import ApiService from "./ApiService";
 const serviceApi = new ApiService("/services");
 
 export const GetServices = async (filters = {}) => {
-  const response = await serviceApi.protected().get("/", { params: filters });
+  const response = await serviceApi.protected().get("", { params: filters });
   return response;
 };
 
@@ -30,12 +30,14 @@ export const CreateService = async ({
     supplier_id,
   };
 
+  alert(JSON.stringify(serviceData));
+
   const response = await serviceApi.protected().post("", serviceData);
   return response;
 };
 
 export const GetServiceDetail = async (serviceId) => {
-  const response = await serviceApi.protected().get(`/${serviceId}`);
+  const response = await serviceApi.protected().get(`/detail/${serviceId}`);
   return response;
 };
 
@@ -80,5 +82,21 @@ export const UpdateService = async (
 
 export const DeleteService = async (serviceId) => {
   const response = await serviceApi.protected().delete(`/${serviceId}`);
+  return response;
+};
+
+const serviceRentalApi = new ApiService("/rental");
+
+export const UpdateServiceRental = async (serviceId, rentalData) => {
+  const response = await serviceRentalApi
+    .protected()
+    .put(`/${serviceId}`, rentalData);
+  return response;
+};
+
+export const UpdateServiceRentalStatus = async (serviceId, status) => {
+  const response = await serviceRentalApi
+    .protected()
+    .put(`/${serviceId}`, { status });
   return response;
 };

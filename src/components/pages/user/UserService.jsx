@@ -1,316 +1,441 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Container,
-  Title,
-  Table,
-  Button,
-  Modal,
-  TextInput,
-  Textarea,
-  NumberInput,
-  Switch,
-  Select,
-  Group,
-  ActionIcon,
-  Text,
-  Paper,
-  Loader,
-  Box,
-} from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-// Replace Tabler Icons with React Icons
-import { FaPlus, FaEdit, FaTrash, FaImage } from "react-icons/fa";
-import {
-  GetUserServices,
   CreateService,
+  GetUserServices,
   UpdateService,
   DeleteService,
 } from "../../../services/ServiceService";
-import MultipleImageUpload from "../../common/MultipleImageUpload";
 import AuthStore from "../../../store/AuthStore";
-import { notifications } from "@mantine/notifications";
+import GenericTable from "../../ui/GenericTable";
+import { formRootRule, useForm } from "@mantine/form";
+
+import {
+  Button,
+  Checkbox,
+  Divider,
+  JsonInput,
+  Modal,
+  MultiSelect,
+  Pill,
+  PillsInput,
+  Table,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import ImageUploader from "../../ui/ImageUploader";
 
 const UserService = () => {
-  const { credentials } = AuthStore();
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [opened, { open, close }] = useDisclosure(false);
-  const [currentService, setCurrentService] = useState(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: 0,
-    available_time_slots: [],
-    images_urls: [],
-    is_support_preference: false,
-    preference_social_media: [],
-    category: "",
-  });
-  const [imageUrls, setImageUrls] = useState([]);
+  const [services, setServices] = useState();
+  const [selectedService, setSelectedService] = useState(null);
+  const {
+    credentials: { user_id },
+  } = AuthStore((state) => state);
 
-  // Fetch user services
-  const fetchServices = async () => {
-    setLoading(true);
-    try {
-      const response = await GetUserServices(credentials.user_id);
-      setServices(response.data.data);
-    } catch (error) {
-      console.error("Error fetching services:", error);
-      notifications.show({
-        title: "Error",
-        message: "Failed to load services",
-        color: "red",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [createOpened, { open: openCreate, close: closeCreate }] =
+    useDisclosure(false);
+  const [editOpened, { open: openEdit, close: closeEdit }] =
+    useDisclosure(false);
+  const [viewOpened, { open: openView, close: closeView }] =
+    useDisclosure(false);
+  const [deleteOpened, { open: openDelete, close: closeDelete }] =
+    useDisclosure(false);
 
-  useEffect(() => {
-    if (credentials.user_id) {
-      fetchServices();
-    }
-  }, [credentials.user_id]);
-
-  // Handle form input changes
-  const handleInputChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
-  };
-
-  // Handle image uploads completion
-  const handleImagesUploaded = (urls) => {
-    setImageUrls(urls);
-    setFormData({ ...formData, images_urls: urls });
-  };
-
-  // Open modal for creating a new service
-  const handleCreateService = () => {
-    setCurrentService(null);
-    setFormData({
+  const createForm = useForm({
+    initialValues: {
       name: "",
       description: "",
       price: 0,
-      available_time_slots: [],
-      images_urls: [],
-      is_support_preference: false,
       preference_social_media: [],
       category: "",
-    });
-    setImageUrls([]);
-    open();
+      available_time_slots: {},
+      is_support_preference: false,
+      images_urls: [],
+    },
+  });
+
+  const editForm = useForm({
+    initialValues: {
+      name: "",
+      description: "",
+      price: 0,
+      preference_social_media: [],
+      category: "",
+      available_time_slots: {},
+      is_support_preference: false,
+      images_urls: [],
+    },
+  });
+
+  const handleEdit = (id) => {
+    const service = services.find((s) => s.id === id);
+    setSelectedService(service);
+    editForm.setValues(service);
+    openEdit();
   };
 
-  // Open modal for editing an existing service
-  const handleEditService = (service) => {
-    setCurrentService(service);
-    setFormData({
-      name: service.name,
-      description: service.description,
-      price: service.price,
-      available_time_slots: service.available_time_slots || [],
-      images_urls: service.images_urls || [],
-      is_support_preference: service.is_support_preference || false,
-      preference_social_media: service.preference_social_media || [],
-      category: service.category || "",
-    });
-    setImageUrls(service.images_urls || []);
-    open();
+  const handleView = (id) => {
+    const service = services.find((s) => s.id === id);
+    setSelectedService(service);
+    openView();
   };
 
-  // Handle form submission
-  const handleSubmit = async () => {
-    try {
-      if (currentService) {
-        // Update existing service
-        await UpdateService(currentService.id, {
-          ...formData,
-          supplier_id: credentials.user_id,
-        });
-        notifications.show({
-          title: "Success",
-          message: "Service updated successfully",
-          color: "green",
-        });
-      } else {
-        // Create new service
-        await CreateService({
-          ...formData,
-          supplier_id: credentials.user_id,
-        });
-        notifications.show({
-          title: "Success",
-          message: "Service created successfully",
-          color: "green",
-        });
-      }
-      close();
-      fetchServices();
-    } catch (error) {
-      console.error("Error saving service:", error);
-      notifications.show({
-        title: "Error",
-        message: "Failed to save service",
-        color: "red",
-      });
-    }
+  const handleDelete = (id) => {
+    const service = services.find((s) => s.id === id);
+    setSelectedService(service);
+    openDelete();
   };
 
-  // Handle service deletion
-  const handleDeleteService = async (serviceId) => {
-    if (window.confirm("Are you sure you want to delete this service?")) {
-      try {
-        await DeleteService(serviceId);
-        fetchServices();
-        notifications.show({
-          title: "Success",
-          message: "Service deleted successfully",
-          color: "green",
-        });
-      } catch (error) {
-        console.error("Error deleting service:", error);
-        notifications.show({
-          title: "Error",
-          message: "Failed to delete service",
-          color: "red",
-        });
-      }
-    }
+  const refreshServices = async () => {
+    let response = await GetUserServices(user_id);
+    setServices(response.data.data);
   };
+
+  useEffect(() => {
+    refreshServices();
+  }, []);
 
   return (
-    <Container size="lg" py="xl">
-      <Group position="apart" mb="md">
-        <Title order={2}>My Services</Title>
-        <Button leftIcon={<FaPlus size={16} />} onClick={handleCreateService}>
-          Add New Service
-        </Button>
-      </Group>
-
-      {loading ? (
-        <Box
-          sx={{ display: "flex", justifyContent: "center", padding: "2rem" }}
+    <div>
+      <div className="flex items-center gap-4">
+        <Title>Dịch vụ của tôi</Title>
+        <Button
+          onClick={() => {
+            openCreate();
+          }}
         >
-          <Loader />
-        </Box>
-      ) : services.length === 0 ? (
-        <Paper p="xl" withBorder>
-          <Text align="center">You don't have any services yet.</Text>
-        </Paper>
-      ) : (
-        <Table striped highlightOnHover>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Price</th>
-              <th>Category</th>
-              <th>Images</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {services.map((service) => (
-              <tr key={service.id}>
-                <td>{service.name}</td>
-                <td>${service.price}</td>
-                <td>{service.category || "N/A"}</td>
-                <td>{(service.images_urls || []).length} images</td>
-                <td>
-                  <Group spacing={8}>
-                    <ActionIcon
-                      color="blue"
-                      onClick={() => handleEditService(service)}
-                    >
-                      <FaEdit size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                      color="red"
-                      onClick={() => handleDeleteService(service.id)}
-                    >
-                      <FaTrash size={16} />
-                    </ActionIcon>
-                  </Group>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
+          Tạo dịch vụ mới
+        </Button>
+      </div>
 
-      {/* Modal for creating/editing services */}
       <Modal
-        opened={opened}
-        onClose={close}
-        title={currentService ? "Edit Service" : "Create New Service"}
-        size="lg"
+        centered
+        opened={createOpened}
+        onClose={closeCreate}
+        title="Tạo dịch vụ mới"
       >
         <TextInput
-          label="Service Name"
-          placeholder="Enter service name"
-          value={formData.name}
-          onChange={(e) => handleInputChange("name", e.target.value)}
-          required
-          mb="md"
+          label="Tên dịch vụ"
+          key={createForm.key("name")}
+          {...createForm.getInputProps("name")}
+          placeholder="Nhập tên dịch vụ"
         />
-
-        <Textarea
-          label="Description"
-          placeholder="Enter service description"
-          value={formData.description}
-          onChange={(e) => handleInputChange("description", e.target.value)}
-          minRows={3}
-          mb="md"
+        <TextInput
+          label="Mô tả"
+          key={createForm.key("description")}
+          {...createForm.getInputProps("description")}
+          placeholder="Nhập mô tả"
         />
-
-        <NumberInput
-          label="Price"
-          placeholder="Enter price"
-          value={formData.price}
-          onChange={(value) => handleInputChange("price", value)}
-          precision={2}
-          mb="md"
+        <TextInput
+          label="Giá"
+          type="number"
+          key={createForm.key("price")}
+          {...createForm.getInputProps("price")}
+          placeholder="Nhập giá"
+          rightSection={<Text>đ</Text>}
         />
-
-        <Select
-          label="Category"
-          placeholder="Select a category"
-          value={formData.category}
-          onChange={(value) => handleInputChange("category", value)}
-          data={[
-            { value: "social_media", label: "Social Media" },
-            { value: "design", label: "Design" },
-            { value: "marketing", label: "Marketing" },
-            { value: "other", label: "Other" },
-          ]}
-          mb="md"
+        <Checkbox
+          className="my-4"
+          defaultChecked
+          color="green.4"
+          onChange={(e) => {
+            createForm.setValues({
+              is_support_preference: e.target.checked,
+            });
+          }}
+          value={createForm.values.is_support_preference}
+          iconColor="dark.8"
+          size="md"
+          label="Có thể hỗ trợ"
         />
-
-        <Switch
-          label="Support preference"
-          checked={formData.is_support_preference}
-          onChange={(e) =>
-            handleInputChange("is_support_preference", e.currentTarget.checked)
-          }
-          mb="md"
+        <TextInput
+          label="Liên kết mạng xã hội"
+          placeholder=""
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              createForm.setValues({
+                preference_social_media: [
+                  ...createForm.values.preference_social_media,
+                  e.target.value,
+                ],
+              });
+              e.target.value = "";
+            }
+          }}
         />
-
-        <Text size="sm" weight={500} mb="xs">
-          Service Images
-        </Text>
-        <MultipleImageUpload
-          onImagesUploaded={handleImagesUploaded}
-          existingImages={imageUrls}
+        <div className="p-2 flex gap-2">
+          {createForm.values.preference_social_media.map(
+            (socialMedia, index) => (
+              <div>
+                <Pill
+                  size="lg"
+                  key={index}
+                  onClose={() => {
+                    setpreference_social_media(
+                      preference_social_media.filter((_, i) => i !== index)
+                    );
+                  }}
+                  withRemoveButton
+                  onRemove={() => {
+                    setpreference_social_media(
+                      preference_social_media.filter((_, i) => i !== index)
+                    );
+                  }}
+                >
+                  {socialMedia}
+                </Pill>
+              </div>
+            )
+          )}
+        </div>
+        <TextInput
+          label="Thể loại"
+          placeholder="Loại dịch vụ mà bạn cung cấp"
         />
-
-        <Group position="right" mt="xl">
-          <Button variant="outline" onClick={close}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit}>
-            {currentService ? "Update" : "Create"}
-          </Button>
-        </Group>
+        <div className="m-0 mt-4 border-[1px] rounded-xl border-gray-200 p-4">
+          <ImageUploader
+            images={createForm.values.images_urls}
+            setImages={(newImagesUrls) => {
+              createForm.setValues({
+                images_urls: [
+                  ...createForm.values.images_urls,
+                  ...newImagesUrls,
+                ],
+              });
+            }}
+          />
+        </div>
+        <Divider className="p-2 mt-4" />
+        <Button
+          color="blue"
+          onClick={async () => {
+            let request = {
+              name: createForm.values.name,
+              description: createForm.values.description,
+              price: createForm.values.price,
+              preference_social_media:
+                createForm.values.preference_social_media,
+              category: createForm.values.category,
+              available_time_slots: createForm.values.available_time_slots,
+              is_support_preference: createForm.values.is_support_preference,
+              images_urls: createForm.values.images_urls,
+              supplier_id: user_id,
+            };
+            let response = await CreateService(request);
+            closeCreate();
+            refreshServices();
+          }}
+        >
+          Tạo dịch vụ
+        </Button>
       </Modal>
-    </Container>
+
+      <Modal
+        centered
+        opened={editOpened}
+        onClose={closeEdit}
+        title="Chỉnh sửa dịch vụ"
+      >
+        <TextInput
+          label="Tên dịch vụ"
+          {...editForm.getInputProps("name")}
+          placeholder="Nhập tên dịch vụ"
+        />
+        <TextInput
+          label="Mô tả"
+          {...editForm.getInputProps("description")}
+          placeholder="Nhập mô tả"
+        />
+        <TextInput
+          label="Giá"
+          type="number"
+          {...editForm.getInputProps("price")}
+          placeholder="Nhập giá"
+          rightSection={<Text>đ</Text>}
+        />
+        <Checkbox
+          className="my-4"
+          color="green.4"
+          onChange={(e) => {
+            editForm.setValues({
+              is_support_preference: e.target.checked,
+            });
+          }}
+          value={editForm.values.is_support_preference}
+          iconColor="dark.8"
+          size="md"
+          label="Có thể hỗ trợ"
+        />
+        <TextInput
+          label="Liên kết mạng xã hội"
+          placeholder=""
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              editForm.setValues({
+                preference_social_media: [
+                  ...editForm.values.preference_social_media,
+                  e.target.value,
+                ],
+              });
+              e.target.value = "";
+            }
+          }}
+        />
+        <div className="p-2 flex gap-2">
+          {editForm.values.preference_social_media.map((socialMedia, index) => (
+            <div>
+              <Pill
+                size="lg"
+                key={index}
+                onClose={() => {
+                  setpreference_social_media(
+                    preference_social_media.filter((_, i) => i !== index)
+                  );
+                }}
+                withRemoveButton
+                onRemove={() => {
+                  setpreference_social_media(
+                    preference_social_media.filter((_, i) => i !== index)
+                  );
+                }}
+              >
+                {socialMedia}
+              </Pill>
+            </div>
+          ))}
+        </div>
+        <TextInput
+          label="Thể loại"
+          placeholder="Loại dịch vụ mà bạn cung cấp"
+          {...editForm.getInputProps("category")}
+        />
+        <div className="m-0 mt-4 border-[1px] rounded-xl border-gray-200 p-4">
+          <ImageUploader
+            images={editForm.values.images_urls}
+            setImages={(newImagesUrls) => {
+              editForm.setValues({
+                images_urls: [...editForm.values.images_urls, ...newImagesUrls],
+              });
+            }}
+          />
+        </div>
+        <Divider className="p-2 mt-4" />
+        <Button
+          color="blue"
+          onClick={async () => {
+            await UpdateService(selectedService.id, {
+              ...editForm.values,
+              supplier_id: user_id,
+            });
+            await refreshServices();
+            closeEdit();
+          }}
+        >
+          Cập nhật
+        </Button>
+      </Modal>
+
+      <Modal
+        centered
+        opened={viewOpened}
+        onClose={closeView}
+        title="Chi tiết dịch vụ"
+      >
+        {selectedService && (
+          <div>
+            <Text>Tên: {selectedService.name}</Text>
+            <Text>Mô tả: {selectedService.description}</Text>
+            <Text>Giá: {selectedService.price}đ</Text>
+            <Text>Thể loại: {selectedService.category}</Text>
+            <Text>
+              Hỗ trợ: {selectedService.is_support_preference ? "Có" : "Không"}
+            </Text>
+            <Text>
+              Mạng xã hội: {selectedService.preference_social_media.join(", ")}
+            </Text>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        centered
+        opened={deleteOpened}
+        onClose={closeDelete}
+        title="Xác nhận xóa"
+      >
+        {selectedService && (
+          <>
+            <Text>Bạn có chắc muốn xóa dịch vụ "{selectedService.name}"?</Text>
+            <div className="flex gap-2 mt-4">
+              <Button
+                color="red"
+                onClick={async () => {
+                  await DeleteService(selectedService.id);
+                  await refreshServices();
+                  closeDelete();
+                }}
+              >
+                Xóa
+              </Button>
+              <Button variant="outline" onClick={closeDelete}>
+                Hủy
+              </Button>
+            </div>
+          </>
+        )}
+      </Modal>
+
+      <div className="flex w-full flex-wrap">
+        <GenericTable
+          headers={[
+            {
+              key: "name",
+              label: "Tên dịch vụ",
+            },
+            {
+              key: "description",
+              label: "Mô tả",
+            },
+            {
+              key: "price",
+              label: "Giá",
+            },
+            {
+              key: "category",
+              label: "Thể loại",
+            },
+            {
+              key: "is_support_preference",
+              label: "Hỗ trợ",
+            },
+            {
+              key: "preference_social_media",
+              label: "Mạng xã hội",
+            },
+          ]}
+          data={
+            services
+              ? services.map((service) => ({
+                  ...service,
+                  is_support_preference: service.is_support_preference
+                    ? "Có"
+                    : "Không",
+                  preference_social_media:
+                    service.preference_social_media.join(", "),
+                  images_urls: service.images_urls.join(", "),
+                  available_time_slots: JSON.stringify(
+                    service.available_time_slots
+                  ),
+                }))
+              : []
+          }
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onView={handleView}
+        />
+      </div>
+    </div>
   );
 };
 

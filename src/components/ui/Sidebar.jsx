@@ -30,7 +30,6 @@ export default function NavbarSimpleColored() {
     let newData = [];
     if (role === "admin") {
       newData.push(
-        { link: "dashboard", label: "Dashboard", icon: AiOutlineDatabase },
         {
           link: "manage-services",
           label: "Quản lý dịch vụ",
@@ -42,7 +41,7 @@ export default function NavbarSimpleColored() {
           icon: AiOutlineSafety,
         }
       );
-      setActive("Dashboard");
+      setActive("Quản lý dịch vụ");
     } else {
       if (role === "provider") {
         newData.push(
@@ -67,7 +66,9 @@ export default function NavbarSimpleColored() {
       }
     }
     setData(newData);
-    navigate(`${newData[0].link}`);
+    if (role != null) {
+      navigate(`${newData[0].link}`);
+    }
   }, [role]);
 
   const links = data.map((item) => (

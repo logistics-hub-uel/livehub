@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import UserService from "./components/pages/user/UserService";
 import { MantineProvider } from "@mantine/core";
+import DemandApplication from "./components/pages/user/DemandApplication";
 import DefaultLayout from "./components/layouts/DefaultLayout";
 import UserLoginPage from "./components/pages/user/UserLoginPage";
 import AdminLoginPage from "./components/pages/admin/AdminLoginPage";
@@ -14,10 +15,15 @@ import AboutPage from "./components/pages/AboutPage";
 import ContactPage from "./components/pages/ContactPage";
 import DemandList from "./components/pages/user/DemandList";
 import theme from "./theme";
+import ServiceRental from "./components/pages/user/ServiceRental";
+import { Notifications } from "@mantine/notifications";
+import AdminManageService from "./components/pages/admin/AdminManageService";
+import AdminManageDemand from "./components/pages/admin/AdminManageDemand";
 
 const App = () => {
   return (
     <MantineProvider theme={theme}>
+      <Notifications />
       <Router>
         <Routes>
           <Route path="/auth" element={<DefaultLayout />}>
@@ -42,12 +48,12 @@ const App = () => {
             <Route path="demand" element={<UserDemand />} />
             <Route path="demandlist" element={<DemandList />} />
             {/* Rentals */}
-            <Route path="rentals" element={<>Rentals</>} />
+            <Route path="rentals" element={<ServiceRental />} />
             <Route
               path="applications"
               element={
                 <>
-                  <h1>Applications</h1>
+                  <DemandApplication />
                 </>
               }
             />
@@ -55,8 +61,7 @@ const App = () => {
               path="manage-services"
               element={
                 <>
-                  {/* Manage services */}
-                  <h1>Manage services</h1>
+                  <AdminManageService />
                 </>
               }
             />
@@ -64,7 +69,7 @@ const App = () => {
               path="manage-demands"
               element={
                 <>
-                  <h1>Manage demands</h1>
+                  <AdminManageDemand />
                 </>
               }
             />

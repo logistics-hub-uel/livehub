@@ -11,7 +11,6 @@ const ImageUploader = ({ onImagesUploaded }) => {
       const uploadPromises = files.map((file) => uploadImage(file));
       const responses = await Promise.all(uploadPromises);
       const imageUrls = responses.map((response) => response.data.url);
-      alert(JSON.stringify(imageUrls));
       onImagesUploaded(imageUrls);
     } catch (error) {
       console.error("Error uploading images:", error);
