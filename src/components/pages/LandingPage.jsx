@@ -24,6 +24,7 @@ import {
   FaCamera,
   FaBuilding
 } from 'react-icons/fa';
+import logo from "../../assets/logo.png";
 
 const services = [
   {
@@ -85,7 +86,6 @@ const LandingPage = () => {
           <Grid gutter={50}>
             <Grid.Col span={{ base: 12, md: 6 }}>
               <Box pt={50}>
-                <Text color="primary.6" fw={700} mb="xs">LOGO</Text>
                 <Title order={1} size="3rem" mb="md">
                   LiveHub - Giải pháp livestream toàn diện cho thương hiệu của bạn
                 </Title>
@@ -114,7 +114,7 @@ const LandingPage = () => {
               </Box>
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}>
-              <Image src="/placeholder-600x400.png" alt="LiveHub Platform" radius="md" />
+              <Image src={logo} alt="LiveHub Platform" radius="md" />
             </Grid.Col>
           </Grid>
         </Container>
@@ -124,36 +124,43 @@ const LandingPage = () => {
       <Box py={80}>
         <Container size="xl">
           <Title order={2} ta="center" mb="xs">Một số dịch vụ nổi bật</Title>
-          <Text ta="center" mb="xl" mx="auto" maw={600}>
+          <Text ta="center" mb={50} mx="auto" maw={600}>
             Chúng tôi cung cấp các dịch vụ chất lượng cao, đáp ứng nhu cầu đa dạng của các thương hiệu khi livestream
           </Text>
 
-          <Grid>
+          <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={30}>
             {services.map((service, index) => (
-              <Grid.Col span={{ base: 12, md: 4 }} key={index}>
-                <Card shadow="sm" padding="lg" radius="md" withBorder>
-                  <ThemeIcon 
-                    size={60} 
-                    radius="md" 
-                    mb="md"
-                    color="primary"
-                  >
-                    <service.icon size="1.8rem" />
-                  </ThemeIcon>
-                  <Text fw={700} size="xl" mb="sm">{service.title}</Text>
-                  <Text size="md" c="dimmed" mb="lg">{service.description}</Text>
-                  <Button 
-                    variant="light" 
-                    component={Link}
-                    to={service.link}
-                    color="primary.3"
-                  >
-                    Xem chi tiết
-                  </Button>
-                </Card>
-              </Grid.Col>
+              <Card 
+                key={index} 
+                shadow="sm" 
+                padding="xl" 
+                radius="md" 
+                withBorder 
+                style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+              >
+                <ThemeIcon 
+                  size={80} 
+                  radius="md" 
+                  mb="xl"
+                  color="primary"
+                  style={{ alignSelf: 'center' }}
+                >
+                  <service.icon size="2.5rem" />
+                </ThemeIcon>
+                <Text fw={700} size="xl" mb="md" ta="center">{service.title}</Text>
+                <Text size="md" c="dimmed" mb="xl" ta="center" style={{ flex: 1 }}>{service.description}</Text>
+                <Button 
+                  variant="light" 
+                  component={Link}
+                  to={service.link}
+                  color="primary"
+                  fullWidth
+                >
+                  Xem chi tiết
+                </Button>
+              </Card>
             ))}
-          </Grid>
+          </SimpleGrid>
         </Container>
       </Box>
 
@@ -221,30 +228,6 @@ const LandingPage = () => {
       </Box>
 
       {/* Partners Section */}
-      <Box py={80}>
-        <Container size="xl">
-          <Title order={2} ta="center" mb="xs">Đối tác của chúng tôi</Title>
-          <Text ta="center" mb="xl" mx="auto" maw={600}>
-            Dịch vụ được tin dùng bởi nhiều doanh nghiệp lớn nhỏ
-          </Text>
-
-          <SimpleGrid cols={{ base: 2, md: 4 }} spacing="xl">
-            {partners.map((partner) => (
-              <Card key={partner.id} shadow="none" padding="lg" radius="md" style={{ backgroundColor: 'transparent' }}>
-                <Center>
-                  <Image 
-                    src={partner.logo} 
-                    alt={partner.name} 
-                    width={120} 
-                    height={120} 
-                    fit="contain"
-                  />
-                </Center>
-              </Card>
-            ))}
-          </SimpleGrid>
-        </Container>
-      </Box>
 
       {/* About Section */}
       <Box py={80} style={{ backgroundColor: 'var(--mantine-color-background-1)' }}>
@@ -306,7 +289,7 @@ const LandingPage = () => {
               </Grid>
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}>
-              <Image src="/placeholder-600x400.png" alt="About LiveHub" radius="md" />
+              <Image src={logo} alt="About LiveHub" radius="md" />
             </Grid.Col>
           </Grid>
         </Container>
