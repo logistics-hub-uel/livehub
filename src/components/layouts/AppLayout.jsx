@@ -3,6 +3,7 @@ import { Header } from "../ui/header";
 import Sidebar from "../ui/Sidebar";
 import { AppShell } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { Outlet } from "react-router-dom";
 
 const AppLayout = () => {
   const [opened, { toggle }] = useDisclosure();
@@ -26,7 +27,9 @@ const AppLayout = () => {
           <Sidebar />
         </AppShell.Navbar>
 
-        <AppShell.Main>Main</AppShell.Main>
+        <AppShell.Main>
+          <Outlet />
+        </AppShell.Main>
       </AppShell>
     </>
   );
