@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
 import {
+  getDemandApplications,
+  updateDemandApplication,
+} from "../../../services/DemandApplicationService";
+import {
   getDemands,
   updateDemand,
   deleteDemand,
@@ -80,7 +84,12 @@ const AdminManageDemand = () => {
   };
 
   const handleView = async (demand) => {
-    setSelectedDemand(demand);
+    let response = await getDemandApplications({
+      demand_id: demand.id,
+    });
+    let newSelectedDemand = { ...demand, applications: response.data };
+    setSelectedDemand(newSelectedDemand);
+
     setDetailModalOpen(true);
   };
 
@@ -155,7 +164,15 @@ const AdminManageDemand = () => {
   const handleUpdateApplicationStatus = async (applicationId, newStatus) => {
     try {
       // TODO: Implement update application status API call
-      // await updateApplicationStatus(applicationId, newStatus);
+      await updateDemandApplication(applicationId, {
+        application_status: newStatus,
+      });
+      selectedDemand.applications = selectedDemand.applications.map((app) =>
+        app.id === applicationId
+          ? { ...app, application_status: newStatus }
+          : app
+      );
+      setSelectedDemand({ ...selectedDemand });
       notifications.show({
         title: "Thành công",
         message: "Đã cập nhật trạng thái đơn ứng tuyển",
